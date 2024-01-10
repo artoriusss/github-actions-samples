@@ -99,9 +99,14 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
 
-    - name: Get the GKE credentials so we can deploy to the cluster
+    - name: Authenticate with gcloud CLI
       run: |
-        gcloud container clusters get-credentials "$GKE_CLUSTER" --region "$GKE_REGION" --internal-ip
+        echo '${{ secrets.GCP_CREDENTIALS }}' | base64 --decode > gcp-credentials.json
+        gcloud auth activate-service-account --key-file gcp-credentials.json
+
+- name: Get credentials for GKE cluster
+  run: |
+    gcloud container clusters get-credentials "$GKE_CLUSTER" --region "$GKE_REGION" --project ${{ secrets.GCP_PROJECT }}
 
     - name: Create namespace & set in Kustomize
       run: |
